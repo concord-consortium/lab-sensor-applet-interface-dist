@@ -5,22 +5,16 @@ var SensorApplet = require('./sensor-applet');
 module.exports = {
   GoIO: miniClass.extendClass(SensorApplet, {
     deviceType: 'golink',
-    deviceSpecificJarUrls: [
-      'org/concord/sensor/sensor-vernier/sensor-vernier.jar',
-      'org/concord/sensor/goio-jna/goio-jna.jar'
-    ]
+    deviceSpecificJars: [ 'sensor-vernier', 'goio-jna']
   }),
 
   LabQuest: miniClass.extendClass(SensorApplet, {
     deviceType: 'labquest',
-    deviceSpecificJarUrls: [
-      'org/concord/sensor/sensor-vernier/sensor-vernier.jar',
-      'org/concord/sensor/labquest-jna/labquest-jna.jar'
-    ]
+    deviceSpecificJars: [ 'sensor-vernier', 'labquest-jna']
   })
 };
 
-},{"./mini-class":3,"./sensor-applet":5}],2:[function(require,module,exports){
+},{"./mini-class":4,"./sensor-applet":6}],2:[function(require,module,exports){
 'use strict';
 
 var util = require('util');
@@ -63,7 +57,10 @@ module.exports = {
   SensorConnectionError: SensorConnectionError
 };
 
-},{"util":10}],3:[function(require,module,exports){
+},{"util":11}],3:[function(require,module,exports){
+// This file is built by the update-timestamp.rb script do not edit it directly
+module.exports = "20131210.035616";
+},{}],4:[function(require,module,exports){
 'use strict';
 
 /**
@@ -167,7 +164,7 @@ module.exports = {
   extendClass: extendClass,
   mixin: mixin
 };
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 /**
@@ -219,12 +216,13 @@ module.exports = {
   }
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var miniClass = require('./mini-class');
 var EventEmitter = require('./mini-event-emitter');
 var errors = require('./errors');
+var jarsTimestamp = require('./jars-timestamp');
 var SensorApplet;
 
 function AppletWaiter(){
@@ -307,9 +305,7 @@ SensorApplet = miniClass.defineClass({
   appletId:     'sensor-applet',
   classNames:   'applet sensor-applet',
 
-  jarUrls:     ['com/sun/jna/jna.jar',
-                'org/concord/sensor/sensor.jar',
-                'org/concord/sensor/sensor-applets/sensor-applets.jar'],
+  jars:     ['jna', 'sensor', 'sensor-applets'],
 
   deviceSpecificJarUrls: [],
 
@@ -317,17 +313,25 @@ SensorApplet = miniClass.defineClass({
 
   testAppletReadyInterval: 100,
 
+  getArchiveValue: function(jars) {
+    var jarUrls = [];
+    for(var i=0; i<jars.length; i++){
+      jarUrls[i] = jars[i] + '.jar';
+    }
+    return jarUrls.join(', ');
+  },
+
   getHTML: function() {
     /*jshint indent: false*/
-    var allJarUrls = this.jarUrls.concat(this.deviceSpecificJarUrls);
+    var allJars = this.jars.concat(this.deviceSpecificJars);
 
     return [
      '<applet ',
-       'id="',       this.appletId,         '" ',
-       'class="',    this.classNames,       '" ',
-       'archive="',  allJarUrls.join(', '), '" ',
+       'id="',       this.appletId, '" ',
+       'class="',    this.classNames, '" ',
+       'archive="',  this.getArchiveValue(allJars), '" ',
        'code="',     this.code,             '" ',
-       'codebase="', this.codebase, '" ',
+       'codebase="', this.codebase, '/', jarsTimestamp, '" ',
        'width="1px" ',
        'height="1px" ',
        'MAYSCRIPT="true" ',
@@ -335,6 +339,7 @@ SensorApplet = miniClass.defineClass({
         '<param name="MAYSCRIPT" value="true" />',
         '<param name="evalOnInit" value="' + this.listenerPath + '.appletIsReadyCallback()" />',
         '<param name="permissions" value="all-permissions" />',
+        '<param name="java_arguments" value="-Djnlp.packEnabled=true"/>',
       '</applet>'
     ].join('');
   },
@@ -346,8 +351,8 @@ SensorApplet = miniClass.defineClass({
        'id="',       this.appletId,         '-test-applet" ',
        'class="applet test-sensor-applet" ',
        'code="org.concord.sensor.applet.DetectionApplet" ',
-       'archive="org/concord/sensor/sensor-applets/sensor-applets.jar"',
-       'codebase="', this.codebase, '" ',
+       'archive="', this.getArchiveValue(['sensor-applets']), '" ',
+       'codebase="', this.codebase, '/', jarsTimestamp, '" ',
        'width="150px" ',
        'height="150px" ',
        'style="position: absolute; ',
@@ -358,6 +363,7 @@ SensorApplet = miniClass.defineClass({
         '<param name="MAYSCRIPT" value="true" />',
         '<param name="evalOnInit" value="' + this.listenerPath + '.testAppletIsReadyCallback()" />',
         '<param name="permissions" value="all-permissions" />',
+        '<param name="java_arguments" value="-Djnlp.packEnabled=true"/>',
       '</applet>'
     ].join('');
   },
@@ -713,7 +719,7 @@ miniClass.mixin(SensorApplet.prototype, EventEmitter);
 
 module.exports = SensorApplet;
 
-},{"./errors":2,"./mini-class":3,"./mini-event-emitter":4}],6:[function(require,module,exports){
+},{"./errors":2,"./jars-timestamp":3,"./mini-class":4,"./mini-event-emitter":5}],7:[function(require,module,exports){
 module.exports = {
   goMotion: {
     appletClass: 'GoIO',
@@ -942,7 +948,7 @@ module.exports = {
   }
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = {
   units: {
     time: {
@@ -988,7 +994,7 @@ module.exports = {
   }
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var appletClasses = require('./lib/applet-classes');
 var errors = require('./lib/errors');
 
@@ -1009,7 +1015,7 @@ module.exports = {
   AlreadyReadingError:       errors.AlreadyReadingError
 };
 
-},{"./lib/applet-classes":1,"./lib/errors":2,"./lib/sensor-definitions":6,"./lib/units-definition":7}],9:[function(require,module,exports){
+},{"./lib/applet-classes":1,"./lib/errors":2,"./lib/sensor-definitions":7,"./lib/units-definition":8}],10:[function(require,module,exports){
 
 
 //
@@ -1227,7 +1233,7 @@ if (typeof Object.getOwnPropertyDescriptor === 'function') {
   exports.getOwnPropertyDescriptor = valueObject;
 }
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1772,7 +1778,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"_shims":9}]},{},[8])
-(8)
+},{"_shims":10}]},{},[9])
+(9)
 });
 ;
