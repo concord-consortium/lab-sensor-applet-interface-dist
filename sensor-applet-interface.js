@@ -186,7 +186,7 @@ module.exports = {
   },
 
   emit: function(evt) {
-    var args = arguments.length > 1 ? [].splice.call(arguments, 1) : [];
+    var args = arguments.length > 1 ? [].slice.call(arguments, 1) : [];
 
     if (this._ee_listeners && this._ee_listeners[evt]) {
       for (var i = 0, len = this._ee_listeners[evt].length; i < len; i++) {
@@ -708,6 +708,9 @@ SensorApplet = miniClass.defineClass({
     }
 
     if (callback) {
+      // IE8 throws the error "Object expected" when 'undefined' is passed as the second argument
+      // to Function.prototype.apply.
+      value = value || [];
       setTimeout(function() {
         callback.apply(self, value);
       }, 5);
@@ -743,8 +746,8 @@ module.exports = {
 
     samplesPerSecond: 20,
     tareable: true,
-    minReading: 0,
-    maxReading: 4,
+    minReading: -2,
+    maxReading: 2,
     precision: 2,
     maxSeconds: 20
   },
@@ -865,8 +868,8 @@ module.exports = {
     deviceName: "LabQuest",
     samplesPerSecond: 20,
     tareable: true,
-    minReading: 0,
-    maxReading: 4,
+    minReading: -2,
+    maxReading: 2,
     precision: 2,
     maxSeconds: 20
   },
